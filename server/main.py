@@ -17,14 +17,20 @@ class Server(asyncore.dispatcher):
     def handle_accept(self):
         sock, addr = self.accept()
         print("%s connected" % addr[0])
-        self.clients.append(EchoHandler(sock))
+        nickname = self.recv(64)
+        while not nickname:
+            nickname = self.recv(64)
+        self.clients.append((EchoHandler(sock), nickname))
 
 class EchoHandler(asyncore.dispatcher_with_send):
     def handle_read(self):
         data = self.recv(1024)
         if data:
+            print(data)
             for x in Server.clients:
-                x.send(data)
-
+                try:
+                    x.send(data)
+                except:
+                    Server.clients.remove(x)
 s = Server(host, port)
 asyncore.loop()
