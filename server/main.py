@@ -17,6 +17,7 @@ class Server(asyncore.dispatcher):
     def handle_accept(self):
         sock, addr = self.accept()
         sock.setblocking(True)
+        sock.send("Welcome!".encode('utf-8'))
         nickname = sock.recv(64)
         while not nickname:
             nickname = sock.recv(64)
@@ -30,7 +31,7 @@ class EchoHandler(asyncore.dispatcher_with_send):
             print(data)
             for x in Server.clients:
                 try:
-                    x.send(data)
+                    x[0].send(data)
                 except:
                     Server.clients.remove(x)
 s = Server(host, port)
