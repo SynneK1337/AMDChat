@@ -16,11 +16,11 @@ class Server(asyncore.dispatcher):
 
     def handle_accept(self):
         sock, addr = self.accept()
-        print("%s connected" % addr[0])
         sock.setblocking(True)
         nickname = sock.recv(64)
         while not nickname:
             nickname = sock.recv(64)
+        print("%s connected from %s" % (nickname.decode('utf-8'), addr[0]))
         self.clients.append((EchoHandler(sock), nickname))
 
 class EchoHandler(asyncore.dispatcher_with_send):
