@@ -17,9 +17,10 @@ class Server(asyncore.dispatcher):
     def handle_accept(self):
         sock, addr = self.accept()
         print("%s connected" % addr[0])
-        nickname = self.recv(64)
+        sock.setblocking(True)
+        nickname = sock.recv(64)
         while not nickname:
-            nickname = self.recv(64)
+            nickname = sock.recv(64)
         self.clients.append((EchoHandler(sock), nickname))
 
 class EchoHandler(asyncore.dispatcher_with_send):
