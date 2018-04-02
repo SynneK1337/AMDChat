@@ -1,5 +1,7 @@
 import asyncore
 import socket
+import threading
+import console
 
 hostname = input("Server: ")
 nickname = input("Nickname: ")
@@ -18,13 +20,21 @@ class Client(asyncore.dispatcher):
         else:
             print("Connected successful")
 
-    def handle_read(self):
-        data = self.recv(1024)
-        if data:
-            print(data.decode('utf-8'))
+    def receiving(self):
+        while 1:
+            data = self.recv(1024)
+            if data:
+                print(data.decode('utf-8'))
+
+    def sending(self):
+        while 1:
+            msg = input("%s@%s$ " % (nickname, hostname))
+            self.send(msg.encode('utf-8'))
     
-    def handle_write(self):
-        msg = input("%s@%s$ " % (nickname, hostname))
-        self.send(msg.encode('utf-8'))
+
 c = Client(hostname, nickname)
+t1 = threading.Thread(target=c.receiving)
+t2 = threading.Thread(target=c.sending)
+t1.start()
+t2.start()
 asyncore.loop()
