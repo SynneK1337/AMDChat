@@ -31,7 +31,8 @@ class EchoHandler(asyncore.dispatcher_with_send):
             print(data)
             for x in Server.clients:
                 try:
-                    x[0].send(data)
+                    if x[0] != self:
+                        x[0].send(data)
                 except:
                     Server.clients.remove(x)
 s = Server(host, port)
