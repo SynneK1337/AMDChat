@@ -4,9 +4,11 @@ import socket
 host = ''
 port = 1337
 
+
 class Server(asyncore.dispatcher):
     clients = []
-    def __init__(self, host, port):
+
+    def __init__(self):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.set_reuse_addr()
@@ -24,6 +26,7 @@ class Server(asyncore.dispatcher):
         print("%s connected from %s" % (nickname.decode('utf-8'), addr[0]))
         self.clients.append((EchoHandler(sock), nickname))
 
+
 class EchoHandler(asyncore.dispatcher_with_send):
     def handle_read(self):
         data = self.recv(1024)
@@ -33,7 +36,10 @@ class EchoHandler(asyncore.dispatcher_with_send):
                 try:
                     if x[0] != self:
                         x[0].send(data)
-                except:
+                except Exception as e:
+                    print("Server Closing. " + "Error: " + str(e))
                     Server.clients.remove(x)
-s = Server(host, port)
+
+
+s = Server()
 asyncore.loop()
