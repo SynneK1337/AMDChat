@@ -1,13 +1,13 @@
 import asyncore
 import socket
 import threading
-import console
 
 hostname = input("Server: ")
 nickname = input("Nickname: ")
 
+
 class Client(asyncore.dispatcher):
-    def __init__(self, hostname, nickname):
+    def __init__(self):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.set_reuse_addr()
@@ -15,8 +15,8 @@ class Client(asyncore.dispatcher):
         try:
             self.connect((hostname, 1337))
             self.send(nickname.encode('utf-8'))
-        except:
-            print("Connection failed.")
+        except Exception as e:
+            print("Connection failed " + "Error: " + str(e))
         else:
             print("Connected successful")
 
@@ -30,9 +30,9 @@ class Client(asyncore.dispatcher):
         while 1:
             msg = input("%s@%s$ " % (nickname, hostname))
             self.send(msg.encode('utf-8'))
-    
 
-c = Client(hostname, nickname)
+
+c = Client()
 t1 = threading.Thread(target=c.receiving)
 t2 = threading.Thread(target=c.sending)
 t1.start()
