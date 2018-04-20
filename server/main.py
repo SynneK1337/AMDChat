@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 import asyncore
 import socket
+from time import sleep
 host = ''
 port = 1337
 
@@ -23,8 +24,20 @@ class Server(asyncore.dispatcher):
         nickname = sock.recv(64)
         while not nickname:
             nickname = sock.recv(64)
-        print("%s connected from %s" % (nickname.decode('utf-8'), addr[0]))
-        self.clients.append((EchoHandler(sock), nickname))
+        if len(self.clients) > 0:
+            for x in self.clients:
+                if nickname in x:
+                    print("%s nickname spoofing detected from %s" %
+                          (nickname.decode('utf-8'), addr[0]))
+                    sock.close()
+                else:
+                    self.clients.append((EchoHandler(sock), nickname))
+                    print("[+] %s connected from %s" %
+                          (nickname.decode('utf-8'), addr[0]))
+        else:
+            self.clients.append((EchoHandler(sock), nickname))
+            print("[+] %s connected from %s" %
+                  (nickname.decode('utf-8'), addr[0]))
 
 
 class EchoHandler(asyncore.dispatcher_with_send):
