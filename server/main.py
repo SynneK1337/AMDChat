@@ -5,6 +5,7 @@ host = 'localhost'
 port = 1337
 server_name = "AMDChat"
 
+
 class Server(asyncore.dispatcher):
     clients = []
     nicknames = []
@@ -32,7 +33,8 @@ class Server(asyncore.dispatcher):
         else:
             self.nicknames.append(nickname)
             self.clients.append(EchoHandler(sock))
-            print("[i] %s connected from %s" % (nickname.decode('utf-8'), addr[0]))
+            print("[i] %s connected from %s" %
+                  (nickname.decode('utf-8'), addr[0]))
 
 
 class EchoHandler(asyncore.dispatcher_with_send):

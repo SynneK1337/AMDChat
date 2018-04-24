@@ -5,6 +5,7 @@ import threading
 hostname = input("Server: ")
 nickname = input("Nickname: ")
 
+
 class Client(asyncore.dispatcher):
     def __init__(self):
         asyncore.dispatcher.__init__(self)
@@ -29,7 +30,9 @@ class Client(asyncore.dispatcher):
     def sending(self):
         while 1:
             msg = input("{}@{}$ ".format(nickname, self.server_name))
-            self.send(("{}@{}$ ".format(nickname, self.server_name) + msg).encode('utf-8'))
+            self.send(
+                ("{}@{}$ ".format(nickname, self.server_name) + msg).encode('utf-8'))
+
 
 c = Client()
 t1 = threading.Thread(target=c.receiving)
