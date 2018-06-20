@@ -1,54 +1,70 @@
 #! /usr/bin/env python
 import asyncore
 import socket
-host = 'localhost'
-port = 1337
-server_name = "AMDChat"
+import config_parse
+from help_parse import help_msg
+
+
+class Commands():
+    def exit(self):
+        Server.clients.pop(self.nickname)
+        self.close()
+        print("{} disconnected.".format(self.nickname))
+
+    def help(self):
+        self.send(help_msg().encode('utf-8'))
 
 
 class Server(asyncore.dispatcher):
-    clients = []
-    nicknames = []
+    port = config_parse.port
+    name = config_parse.name
+    clients = {}
 
     def __init__(self):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.set_reuse_addr()
-        self.bind((host, port))
-        self.listen(5)
-        print("[+] Server listening on port %s" % port)
+        self.bind(('', self.port))
+        self.listen(0)
+        print("[+] Server listening on port {}.".format(self.port))
 
     def handle_accept(self):
         sock, addr = self.accept()
         sock.setblocking(True)
-        sock.send(server_name.encode('utf-8'))
-        nickname = sock.recv(64)
-        while not nickname:
-            nickname = sock.recv(64)
-        if nickname in self.nicknames:
-            print("[!] %s nickname spoofing detected from %s" %
-                  (nickname.decode('utf-8'), addr[0]))
-            sock.send("Nickname is used already".encode('utf-8'))
+        sock.send(self.name.encode('utf-8'))
+        nickname = sock.recv(16).decode('utf-8', errors='ignore')
+        if nickname in self.clients:
+            print(
+                "[!] {} nickname spoofing detected from {}".format(
+                    nickname, addr))
+            sock.send("Nickname is already in use.".encode('utf-8'))
 
         else:
-            self.nicknames.append(nickname)
-            self.clients.append(EchoHandler(sock))
-            print("[i] %s connected from %s" %
-                  (nickname.decode('utf-8'), addr[0]))
+            self.clients[nickname] = EchoHandler(sock)
+            EchoHandler.nickname = nickname
+            print("[i] {} connected from {}".format(nickname, addr[0]))
 
 
 class EchoHandler(asyncore.dispatcher_with_send):
+    nickname = str
+
     def handle_read(self):
-        data = self.recv(1024)
-        if data:
-            print(data.decode('utf-8'))
-            for x in Server.clients:
+        data = self.recv(1024).decode('utf-8', errors='ignore')
+        if data.startswith("/"):
+            if data.lower() == "/exit" or data.lower() == "/quit":
+                Commands.exit(self)
+            elif data.lower() == "/help":
+                Commands.help(self)
+        else:
+            print("{}~$ {}".format(self.nickname, data))
+            for x in Server.clients.values():
                 try:
                     if x != self:
-                        x.send(data)
-                except Exception as e:
-                    print("Server Closing. " + "Error: " + str(e))
-                    Server.clients.remove(x)
+                        x.send(data.encode('utf-8'))
+                except BaseException:
+                    self.close()
+                    Server.clients.pop(self.nickname)
+                    print("{} timed out.".format(self.nickname))
 
 
 s = Server()

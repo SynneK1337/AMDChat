@@ -1,0 +1,5 @@
+AMDChat /help
+    /exit   quit the server
+    /quit   quit the server
+    /help   show this help message
+    
