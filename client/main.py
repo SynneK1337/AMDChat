@@ -22,16 +22,17 @@ class Client(asyncore.dispatcher):
         self.server_name = self.recv(64).decode('utf-8')
 
     def receiving(self):
-        while 1:
+        while True:
             data = self.recv(1024)
             if data:
                 print("\n" + data.decode('utf-8'))
 
     def sending(self):
-        while 1:
+        while True:
             msg = input("{}@{}$ ".format(nickname, self.server_name))
-            self.send(
-                ("{}@{}$ ".format(nickname, self.server_name) + msg).encode('utf-8'))
+            self.send(msg.encode('utf-8', errors="ignore"))
+            if msg == "/exit" or msg == "/quit":
+                exit()
 
 
 c = Client()
