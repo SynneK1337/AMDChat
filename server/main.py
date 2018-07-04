@@ -10,9 +10,9 @@ class Commands():
         Server.clients.pop(self.nickname)
         self.close()
         self.disc_msg = "{} disconnected.".format(self.nickname)
-        print(disc_msg)
+        print(self.disc_msg)
         for x in Server.clients.values():
-            x.send(disc_msg.encode('utf-8'))
+            x.send(self.disc_msg.encode('utf-8'))
 
     def help(self):
         self.send(help_msg().encode('utf-8'))
@@ -46,7 +46,7 @@ class Server(asyncore.dispatcher):
 
             except:
                 self.clients[nickname] = EchoHandler(sock)
-                EchoHandler.nickname = nickname
+                self.clients[nickname].nickname = nickname
                 print("[i] {} connected from {}".format(nickname, addr[0]))
 
             
@@ -58,7 +58,7 @@ class Server(asyncore.dispatcher):
 
         else:
             self.clients[nickname] = EchoHandler(sock)
-            EchoHandler.nickname = nickname
+            self.clients[nickname].nickname = nickname
             print("[i] {} connected from {}".format(nickname, addr[0]))
 
 
@@ -82,9 +82,10 @@ class EchoHandler(asyncore.dispatcher_with_send):
             for x in Server.clients.values():
                 try:
                     if x != self:
-                        x.send(data.encode('utf-8'))
-                except BaseException:
-                    Commands.exit()
+                        x.send("{}~$ {}".format(self.nickname, data).encode('utf-8', errors="ignore"))
+
+                except socket.timeout:
+                    Commands.exit(self)
 
 
 s = Server()
