@@ -26,6 +26,10 @@ class Server(asyncore.dispatcher):
     port = config_parse.port
     name = config_parse.name
     clients = {}
+    def accept(self):
+        self.clients[nickname] = EchoHandler(sock)
+        EchoHandler.nickname = nickname
+        print("[i] {} connected from {}".format(nickname, addr[0]))
 
     def __init__(self):
         asyncore.dispatcher.__init__(self)
@@ -41,15 +45,20 @@ class Server(asyncore.dispatcher):
         sock.send(self.name.encode('utf-8'))
         nickname = sock.recv(16).decode('utf-8', errors='ignore')
         if nickname in self.clients:
+            try:
+                self.clients[nickname].send(" ".encode('utf-8'))
+
+            except:
+                self.accept()
+            
+            else:
             print(
                 "[!] {} nickname spoofing detected from {}".format(
                     nickname, addr))
             sock.send("Nickname is already in use.".encode('utf-8'))
 
         else:
-            self.clients[nickname] = EchoHandler(sock)
-            EchoHandler.nickname = nickname
-            print("[i] {} connected from {}".format(nickname, addr[0]))
+            self.accept()
 
 
 class EchoHandler(asyncore.dispatcher_with_send):
