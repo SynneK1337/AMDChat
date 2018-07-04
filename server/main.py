@@ -26,10 +26,6 @@ class Server(asyncore.dispatcher):
     port = config_parse.port
     name = config_parse.name
     clients = {}
-    def accept(self):
-        self.clients[nickname] = EchoHandler(sock)
-        EchoHandler.nickname = nickname
-        print("[i] {} connected from {}".format(nickname, addr[0]))
 
     def __init__(self):
         asyncore.dispatcher.__init__(self)
@@ -49,7 +45,10 @@ class Server(asyncore.dispatcher):
                 self.clients[nickname].send(" ".encode('utf-8'))
 
             except:
-                self.accept()
+                self.clients[nickname] = EchoHandler(sock)
+                EchoHandler.nickname = nickname
+                print("[i] {} connected from {}".format(nickname, addr[0]))
+
             
             else:
                 print(
@@ -58,7 +57,10 @@ class Server(asyncore.dispatcher):
                 sock.send("Nickname is already in use.".encode('utf-8'))
 
         else:
-            self.accept()
+            self.clients[nickname] = EchoHandler(sock)
+            EchoHandler.nickname = nickname
+            print("[i] {} connected from {}".format(nickname, addr[0]))
+
 
 
 class EchoHandler(asyncore.dispatcher_with_send):
