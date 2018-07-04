@@ -9,10 +9,17 @@ class Commands():
     def exit(self):
         Server.clients.pop(self.nickname)
         self.close()
-        print("{} disconnected.".format(self.nickname))
+        self.disc_msg = "{} disconnected.".format(self.nickname)
+        print(disc_msg)
+        for x in Server.clients.values():
+            x.send(disc_msg.encode('utf-8'))
 
     def help(self):
         self.send(help_msg().encode('utf-8'))
+
+    def list_clients(self):
+        for x in Server.clients.values():
+            x.send(" ".join(Server.clients.keys).encode('utf-8'))
 
 
 class Server(asyncore.dispatcher):
@@ -53,8 +60,12 @@ class EchoHandler(asyncore.dispatcher_with_send):
         if data.startswith("/"):
             if data.lower() == "/exit" or data.lower() == "/quit":
                 Commands.exit(self)
+                print("{} disconnected.".format(self.nickname))
             elif data.lower() == "/help":
                 Commands.help(self)
+
+            elif data.lower() == "/list":
+                Commands.list_clients(self)
         else:
             print("{}~$ {}".format(self.nickname, data))
             for x in Server.clients.values():
@@ -62,9 +73,7 @@ class EchoHandler(asyncore.dispatcher_with_send):
                     if x != self:
                         x.send(data.encode('utf-8'))
                 except BaseException:
-                    self.close()
-                    Server.clients.pop(self.nickname)
-                    print("{} timed out.".format(self.nickname))
+                    Commands.exit()
 
 
 s = Server()
