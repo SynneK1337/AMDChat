@@ -3,6 +3,8 @@ import socket
 import threading
 
 hostname = input("Server: ")
+if hostname == "":
+    hostname = "srv02.mikr.us"
 nickname = input("Nickname: ")
 
 
@@ -13,7 +15,7 @@ class Client(asyncore.dispatcher):
         self.set_reuse_addr()
         self.socket.setblocking(True)
         try:
-            self.connect((hostname, 1337))
+            self.connect((hostname, 20467))
             self.send(nickname.encode('utf-8'))
         except Exception as e:
             print("Connection failed " + "Error: " + str(e))
