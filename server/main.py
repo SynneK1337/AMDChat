@@ -52,10 +52,10 @@ class Server(asyncore.dispatcher):
                 self.accept()
             
             else:
-            print(
-                "[!] {} nickname spoofing detected from {}".format(
-                    nickname, addr))
-            sock.send("Nickname is already in use.".encode('utf-8'))
+                print(
+                    "[!] {} nickname spoofing detected from {}".format(
+                        nickname, addr))
+                sock.send("Nickname is already in use.".encode('utf-8'))
 
         else:
             self.accept()
